@@ -2,7 +2,7 @@
 """
 Created on Wed Aug 21 14:05:37 2019
 
-@author: BOYLER1
+@author: Rory Boyle rorytboyle@gmail.com github.com/rorytboyle
 """
 
 def linear_reg(y, X, names):
