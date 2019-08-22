@@ -16,16 +16,31 @@ def linear_reg(y, X, names):
     :return list: list of extracted stats/results from statsmodels OLS object
     :return model: OLS results object
     """
-    
     # run regression - add constant to X
     model = sm.OLS(y, sm.add_constant(X)).fit()
-    
+     
     # extract results from statsmodel OLS object
     results = [names, model.nobs, model.df_resid, model.df_model,
                model.rsquared, model.fvalue, model.f_pvalue, model.ssr,
                model.centered_tss, model.mse_model, model.mse_resid,
-               model.mse_total, model.params[0], model.params[1:],
-               model.pvalues[1:]]
+               model.mse_total]
+
+    # copy names and add constant
+    namesCopy = names[:]
+    namesCopy.insert(0, 'constant')
+    
+    # create dicts containing name of each parameter in model (i.e. predictor
+    # variables) and the beta coefficient/p-value
+    coeffs = {}
+    
+    p_values = {}
+    for ix, coeff in enumerate(model.params):
+        coeffs[namesCopy[ix]] = coeff
+        p_values[namesCopy[ix]] = model.pvalues[ix]
+        
+    # add coefficient values and p-values for each predictor to results list
+    results.append(coeffs)
+    results.append(p_values)
     
     return results, model
 
@@ -58,7 +73,7 @@ def calculate_change_stats(model_stats):
     
     # calculate f change - formula from here: 
     f_change = []
-    for step in range(0, num_steps-1): # BREAKS HERE ############################
+    for step in range(0, num_steps-1):
         # numerator of f change formula
         # (r_sq change / number of predictors added)
         f_change_numerator = r_sq_change[step] / (len(model_stats.iloc[step+1]['predictors'])
@@ -113,9 +128,8 @@ def hierarchical_regression(y, X, names):
         mse_mod = mean squared error of model
         mse_resid =  mean square error of residuals
         mse_total = total mean square error
-        constant_coeff = intercept coeff
-        x_coeff = coefficient values for predictors
-        x_p = p-values for predictors
+        beta_coeff = coefficient values for intercept and predictors
+        p_values = p-values for intercept and predictors
         r-sq_change = r-squared change for model (Step 2 r-sq - Step 1 r-sq)
         f_change = f change for model (Step 2 f - Step 1 f)
         f_change_pval = p-value of f-change of model
@@ -144,9 +158,9 @@ def hierarchical_regression(y, X, names):
     # add results to model_stats dataframe
     model_stats = pd.DataFrame(results)
     model_stats.columns = ['step', 'predictors', 'num_obs', 'df_resid',
-                             'df_mod', 'r-sq', 'f', 'f_pval', 'sse', 'ssto',
-                             'mse_mod', 'mse_resid', 'mse_total', 
-                             'constant_coeff', 'x_coeff', 'x_p']
+                           'df_mod', 'r-sq', 'f', 'f_pval', 'sse', 'ssto',
+                           'mse_mod', 'mse_resid', 'mse_total', ' beta_coeff',
+                           'p_values']
     ####################### ADD COLUMN NAMES FOR ASSUMPTION CHECKS ############
     #######################################################################
     
