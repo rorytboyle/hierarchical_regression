@@ -16,7 +16,7 @@ def linear_reg(y, X, names):
     :return list: list of extracted stats/results from statsmodels OLS object
     :return model: OLS results object
     """
-    # run regression - add constant to X
+    # run regression - add column of 1s to X to serve as intercept
     model = sm.OLS(y, sm.add_constant(X)).fit()
      
     # extract results from statsmodel OLS object
@@ -25,20 +25,19 @@ def linear_reg(y, X, names):
                model.centered_tss, model.mse_model, model.mse_resid,
                model.mse_total]
 
-    # copy names and add constant
+    # deep copy names and add constant - otherwise results list will contain
+    # multiple repetitions of constant (due to below loop)
     namesCopy = names[:]
     namesCopy.insert(0, 'constant')
     
-    # create dicts containing name of each parameter in model (i.e. predictor
-    # variables) and the beta coefficient/p-value
+    # create dicts with name of each parameter in model (i.e. predictor
+    # variables) and the beta coefficient andp-value
     coeffs = {}
-    
     p_values = {}
     for ix, coeff in enumerate(model.params):
         coeffs[namesCopy[ix]] = coeff
         p_values[namesCopy[ix]] = model.pvalues[ix]
         
-    # add coefficient values and p-values for each predictor to results list
     results.append(coeffs)
     results.append(p_values)
     
@@ -55,7 +54,7 @@ def calculate_change_stats(model_stats):
     https://www.researchgate.net/post/What_is_a_significant_f_change_value_in_a_hierarchical_multiple_regression
         
     p-value of f change calculated using the formula:
-    f with (num predictors added, n - k - 1 ) ==> n - k - 1 = Residual df for Step 2
+    f with (num predictors added, n - k - 1) ==> n-k-1 = Residual df for Step 2
     https://stackoverflow.com/questions/39813470/f-test-with-python-finding-the-critical-value
     
     :param model_stats: description of parameter x
@@ -63,7 +62,7 @@ def calculate_change_stats(model_stats):
              p-value for f change
     
     """
-    # get number of steps
+    # get number of steps 
     num_steps = model_stats['step'].max()
     
     # calculate r-square change (r-sq of current step minus r-sq of previous step)
@@ -113,7 +112,7 @@ def hierarchical_regression(y, X, names):
               [[height], [height, weight]]
     :param names: nested lists with each list containing names of predictor
               variables for each step. names should be structured as above.
-    :return: model_stats - a df (number of rows = number of steps)
+    :return: model_stats - a df (rows = number of steps * cols = 18)
     with following info for each step:
         step = step number
         x = predictor names
@@ -133,7 +132,8 @@ def hierarchical_regression(y, X, names):
         r-sq_change = r-squared change for model (Step 2 r-sq - Step 1 r-sq)
         f_change = f change for model (Step 2 f - Step 1 f)
         f_change_pval = p-value of f-change of model
-    :return reg_models: - a nested list containing the step name of each model and the OLS model object 
+    :return reg_models: - a nested list containing the step name of each model
+    and the OLS model object 
     """
           
     # Parse input
