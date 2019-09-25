@@ -91,7 +91,7 @@ def calculate_change_stats(model_stats):
     
     return [r_sq_change, f_change, f_change_pval]
 
-def hierarchical_regression(y, X, names):
+def hierarchical_regression(y, X, names, saveFolder):
     """
     Runs hierarchical linear regressions predicting y from X. Uses statsmodels
     OLS to run linear regression for each step. Returns results of regression
@@ -112,6 +112,8 @@ def hierarchical_regression(y, X, names):
               [[height], [height, weight]]
     :param names: nested lists with each list containing names of predictor
               variables for each step. names should be structured as above.
+    :param saveFolder: full path for folder in which to save model results and/
+              diagnostics info
     :return: model_stats - a df (rows = number of steps * cols = 18)
     with following info for each step:
         step = step number
@@ -154,7 +156,10 @@ def hierarchical_regression(y, X, names):
         # CALL FUNCTION TO CHECK ASSUMPTIONS OF MULTIPLE REGRESSION HERE
         # AND ADD TO END OF RESULTS
         #######################################################################
-    
+        saveto = saveFolder + r'\step' + str(ix+1)
+        regression_diagnostics(
+                currentStepModel, currentStepResults, y, currentX, saveto)
+        
     # add results to model_stats dataframe
     model_stats = pd.DataFrame(results)
     model_stats.columns = ['step', 'predictors', 'num_obs', 'df_resid',
