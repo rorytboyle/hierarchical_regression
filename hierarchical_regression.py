@@ -148,26 +148,23 @@ def hierarchical_regression(y, X, names, saveFolder):
         # run regression - ### CHANGED 19/08 TO ADD IN DIAGNOSTICS
         currentStepResults, currentStepModel = linear_reg(y, currentX, names[ix])
         currentStepResults.insert(0, ix+1)  # add step number to results
+
+        # run regression diagnostics
+        saveto = saveFolder + r'\step' + str(ix+1)
+        assumptionsToCheck = regression_diagnostics(
+                currentStepModel, currentStepResults, y, currentX, saveto)
+        currentStepResults.append(assumptionsToCheck)
+        
         results.append(currentStepResults)
         # add model to list of models along with step number
         reg_models.append(['Step ' + str(ix+1), currentStepModel])
-        
-        #######################################################################
-        # CALL FUNCTION TO CHECK ASSUMPTIONS OF MULTIPLE REGRESSION HERE
-        # AND ADD TO END OF RESULTS
-        #######################################################################
-        saveto = saveFolder + r'\step' + str(ix+1)
-        regression_diagnostics(
-                currentStepModel, currentStepResults, y, currentX, saveto)
         
     # add results to model_stats dataframe
     model_stats = pd.DataFrame(results)
     model_stats.columns = ['step', 'predictors', 'num_obs', 'df_resid',
                            'df_mod', 'r-sq', 'f', 'f_pval', 'sse', 'ssto',
                            'mse_mod', 'mse_resid', 'mse_total', ' beta_coeff',
-                           'p_values']
-    ####################### ADD COLUMN NAMES FOR ASSUMPTION CHECKS ############
-    #######################################################################
+                           'p_values', 'assumptionsToCheck']
     
     # calculate r-sq change, f change, p-value of f change
     change_results = calculate_change_stats(model_stats)

@@ -11,20 +11,49 @@ import os
 # https://towardsdatascience.com/verifying-the-assumptions-of-linear-regression-in-python-and-r-f4cd2907d4c0
 
 def regression_diagnostics(model, result, y, X, saveto):
-    """High level description of function COMPLETE THIS COMMENT ###############
+    """
+    Runs formal diagnostic tests for linear regression and creates plots for
+    further inspection. Outputs a summary text file listing the failed
+    diagnostic tests and a list of assumptions that require further inspection.
 
-    Additional details on function COMPLETE THIS COMMENT ######################
+    Assumption tested               Diagnostic Test(s) & Plots used
+
+    1. Independence of Residuals    Durbin Watson Test
+    
+    2. Linearity                    Pearson's Correlations for DV and each IV
+                                    Harvey-Collier Multiplier test
+                                    Rainbow Test
+                                    Plot: Studentised Residuals vs Fitted Values
+                                    Plot: Partial Regression Plots
+                                    
+    3. Homoscedasticity             Breusch Pagan Test
+                                    F-test
+                                    Goldfeld Quandt Test
+                                    Plot: Studentised Residuals vs Fitted Values
+                                    
+    4. Multicollinearity            Pairwise Correlations between DVs
+                                    Variance Inflation Factor
+                                    
+    5. Outliers/Influence           Standardised Residuals (> -3 & < +3)
+                                    Cook's Distance
+                                    Plot: Boxplot of Standardised Residuals
+                                    Plot: Influence Plot with Cook's Distance
+                                    
+    6. Normality                    Mean of Residuals (approx = 0)
+                                    Shapiro-Wilk Test
+                                    Plot: Normal QQ Plot of Residuals
 
     :param model: regression.linear_model.RegressionResultsWrapper
                   from statsmodels.OLS
     :param result: Series containing extracted results from
                   linear regression. One row of results df
                   returned by hierarchical_regression()
-    :param y: COMPLETE THIS COMMENT #########################
-    :param X: COMPLETE THIS COMMENT #########################
+    :param y: outcome variable
+    :param X: predictor variable(s)
     :param saveto: folder specifying dir to save results and
                   plots
-    :return: COMPLETE THIS COMMENT ##########################
+    :return assumptionsToCheck: list of assumptions that require further
+                                inspection
     """
     # get resid vals
     influence_df = sm_diagnostics.OLSInfluence(model).summary_frame()
@@ -36,7 +65,7 @@ def regression_diagnostics(model, result, y, X, saveto):
     formalNames = {}
     # create folder
     os.makedirs(saveto)
-    # get step number 
+    # get step number
     step = saveto.split("\\")[-1]
 
 # ASSUMPTION 1 - INDEPENDENCE OF RESIDUALS
@@ -180,7 +209,7 @@ def regression_diagnostics(model, result, y, X, saveto):
             diagnostics['VIF_passed'] = 'No'
             # add predictor names to diagnostics
             diagnostics['VIF_predictorsFailed'] = vif[vif > 5].to_string(
-                    index=False, header=False)       
+                    index=False, header=False)
 
     else:  # run code if only 1 predictor
         diagnostics['VIF_passed'] = 'Yes'
@@ -379,3 +408,8 @@ def regression_diagnostics(model, result, y, X, saveto):
     figName = saveto + '\\' + step + '_PartialRegressionPlots.png'
     fig_partRegress.savefig(figName)
     plt.clf()
+
+# Return list of assumptions that require further inspection (i.e. failed
+# at least 1 diagnostic test)
+    assumptionsToCheck = list(set(violated))
+    return assumptionsToCheck
