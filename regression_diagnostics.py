@@ -84,8 +84,10 @@ def regression_diagnostics(model, result, y, X, saveto):
 
 # ASSUMPTION 2 - LINEARITY
     # a) linearity between DV and each IV - Pearson's r
-    if len(X.shape) > 1:  # run code if there are multiple predictors
-        correlations = [scipy.stats.pearsonr(X[var], y)
+    if len(X.columns) > 1:  # run code if there are multiple predictors
+        # Debugged 30/09/2019 originally used just y in correlation function
+        # y.iloc[:, 0] needed to call function between two series to avoid error
+        correlations = [scipy.stats.pearsonr(X[var], y.iloc[:, 0])
                         for var in X.columns]
         for ix, corr in enumerate(correlations):
             xName = 'IV_' + X.columns[ix] + '_pearson_'
@@ -178,7 +180,7 @@ def regression_diagnostics(model, result, y, X, saveto):
 
 # ASSUMPTION 4 - MULTICOLLINEARITY
     # a) check pairwise correlations < 0.8
-    if len(X.shape) > 1:  # run code if there are multiple predictors
+    if len(X.columns) > 1:  # run code if there are multiple predictors
         pairwise_corr = X.corr()
         pairwise_corr = pairwise_corr[pairwise_corr != 1]  # make diagonals=nan
 
@@ -195,10 +197,20 @@ def regression_diagnostics(model, result, y, X, saveto):
     formalNames['high_pairwise_correlations_passed'] = 'High Pairwise correlations'
 
     # b) Variance Inflation Factors < 10
-    if len(X.shape) > 1:  # run code if there are multiple predictors
+    if len(X.columns) > 1:  # run code if there are multiple predictors
         vif = pd.DataFrame()
         vif['VIF'] = [sm_stats.outliers_influence.variance_inflation_factor(
                 X.values, i) for i in range(X.shape[1])]
+           
+            #       DEBUG DEBUG DEBUG
+#            [sm_stats.outliers_influence.variance_inflation_factor(
+#                X[col].values, ix) for ix, col in enumerate(X.columns)]
+#            
+#            [print(ix,col) for ix, col in enumerate(X.columns)]
+#            
+#            X[col].shape[1]
+#            
+#                print(i)
         vif['features'] = X.columns
 
         # if no predictors have vif > 5
@@ -237,7 +249,7 @@ def regression_diagnostics(model, result, y, X, saveto):
 
     # influence = Cook's Distance
     # https://www.researchgate.net/publication/2526564_A_Teaching_Note_on_Cook's_Distance_-_A_Guideline
-    if len(X.shape) == 1:
+    if len(X.columns) == 1:
         cooks_cutOff = 0.7  # cut off for 1 predictor = Cooks > 0.7 (n>15)
     elif X.shape[1] == 2:
         cooks_cutOff = 0.8  # cut off for 2 predictors = Cooks > 0.8 (n>15)
@@ -338,7 +350,7 @@ def regression_diagnostics(model, result, y, X, saveto):
     # pd.DataFrame.from_dict(diagnostics) creates an empty df
 
     # save csv of pairwise correlations - only if there are multiple predictors
-    if len(X.shape) > 1:
+    if len(X.columns) > 1:
         pairwiseCorrName = saveto + '\\' + step + '_pairwise_correlations.csv'
         high_pairwise_corr.to_csv(pairwiseCorrName)
 
