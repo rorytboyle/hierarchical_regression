@@ -201,16 +201,6 @@ def regression_diagnostics(model, result, y, X, saveto):
         vif = pd.DataFrame()
         vif['VIF'] = [sm_stats.outliers_influence.variance_inflation_factor(
                 X.values, i) for i in range(X.shape[1])]
-           
-            #       DEBUG DEBUG DEBUG
-#            [sm_stats.outliers_influence.variance_inflation_factor(
-#                X[col].values, ix) for ix, col in enumerate(X.columns)]
-#            
-#            [print(ix,col) for ix, col in enumerate(X.columns)]
-#            
-#            X[col].shape[1]
-#            
-#                print(i)
         vif['features'] = X.columns
 
         # if no predictors have vif > 5
