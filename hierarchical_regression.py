@@ -149,8 +149,11 @@ def hierarchical_regression(y, X, names, saveFolder):
         currentStepResults, currentStepModel = linear_reg(y, currentX, names[ix])
         currentStepResults.insert(0, ix+1)  # add step number to results
 
-        # run regression diagnostics
         saveto = saveFolder + r'\step' + str(ix+1)
+        modelSave = saveto + "model.pickle" # THIS LINE HASNT BEEN TESTED
+        currentStepModel.save(modelSave) # THIS LINE HASNT BEEN TESTED
+        
+        # run regression diagnostics
         assumptionsToCheck = regression_diagnostics(
                 currentStepModel, currentStepResults, y, currentX, saveto)
         currentStepResults.append(assumptionsToCheck)
@@ -163,7 +166,7 @@ def hierarchical_regression(y, X, names, saveFolder):
     model_stats = pd.DataFrame(results)
     model_stats.columns = ['step', 'predictors', 'num_obs', 'df_resid',
                            'df_mod', 'r-sq', 'f', 'f_pval', 'sse', 'ssto',
-                           'mse_mod', 'mse_resid', 'mse_total', ' beta_coeff',
+                           'mse_mod', 'mse_resid', 'mse_total', 'beta_coeff',
                            'p_values', 'assumptionsToCheck']
     
     # calculate r-sq change, f change, p-value of f change
