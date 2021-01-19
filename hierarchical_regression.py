@@ -13,7 +13,7 @@ def linear_reg(y, X, names):
     :param y: outcome variable
     :param X: predictor variable(s)
     :param names: names of predictor variables
-    :return list: list of extracted stats/results from statsmodels OLS object
+    :return results: list of extracted stats/results from statsmodels OLS object
     :return model: OLS results object
     """
     # run regression - add column of 1s to X to serve as intercept
